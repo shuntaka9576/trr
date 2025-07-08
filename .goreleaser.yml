@@ -1,0 +1,73 @@
+version: 2
+
+before:
+  hooks:
+    - rustup default stable
+    - rustup target add x86_64-apple-darwin aarch64-apple-darwin
+    - cargo install --locked cargo-zigbuild
+
+builds:
+  - id: "trr-macos"
+    builder: rust
+    binary: trr
+    targets:
+      - x86_64-apple-darwin
+      - aarch64-apple-darwin
+    tool: "cargo"
+    command: build
+    flags:
+      - --release
+      - --target={{ .Target }}
+    skip: false
+    env:
+      - CGO_ENABLED=0
+  - id: "trr-linux"
+    builder: rust
+    binary: trr
+    targets:
+      - x86_64-unknown-linux-gnu
+      - aarch64-unknown-linux-gnu
+    tool: "cargo"
+    command: zigbuild
+    flags:
+      - --release
+    skip: false
+
+archives:
+  - id: macos-archive
+    builds: ["trr-macos"]
+    formats: ["tar.gz"]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+  - id: linux-archive
+    builds: ["trr-linux"]
+    formats: ["tar.gz"]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+brews:
+  - repository:
+      owner: shuntaka9576
+      name: homebrew-tap
+      token: "{{ .Env.GH_PAT }}"
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    directory: Formula
+    license: MIT
+    name: trr
+    url_template: "https://github.com/shuntaka9576/trr/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    homepage: "https://shuntaka.dev/"
+    description: "🌿 Branch isolation tool using tmux + rsync. Create dedicated workspaces for each git branch with automatic tmux window management."
+    test: |
+      system "#{bin}/trr --help"
+    install: |
+      bin.install "trr"

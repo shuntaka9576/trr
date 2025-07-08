@@ -1,0 +1,46 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--all"]
+
+[tasks.format-check]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--all", "--", "--check"]
+
+[tasks.clippy]
+install_crate = "clippy"
+command = "cargo"
+args = ["clippy", "--all-targets", "--all-features"]
+
+[tasks.clippy-ci]
+install_crate = "clippy"
+command = "cargo"
+args = ["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"]
+
+[tasks.check]
+command = "cargo"
+args = ["check", "--all-features"]
+
+[tasks.build]
+command = "cargo"
+args = ["build", "--all-features"]
+
+[tasks.test]
+command = "cargo"
+args = ["test", "--all-features"]
+
+[tasks.dev]
+dependencies = ["format", "build", "test", "clippy"]
+
+[tasks.ci]
+dependencies = ["format-check", "check", "build", "test", "clippy-ci"]
+
+[tasks.test-ci]
+run_task = { name = "test", fork = true, silent = true }
+
+[tasks.default]
+alias = "dev"
