@@ -22,7 +22,6 @@ impl Default for Config {
     fn default() -> Self {
         let mut branch_aliases = HashMap::new();
         branch_aliases.insert("@f".to_string(), "feature".to_string());
-        branch_aliases.insert("@fx".to_string(), "fix".to_string());
         branch_aliases.insert("@b".to_string(), "bugfix".to_string());
         branch_aliases.insert(
             "@t".to_string(),
@@ -42,11 +41,7 @@ tmux select-pane -t 1
 "#
                 .to_string(),
                 rsync_excludes: vec![
-                    "target/".to_string(),
-                    "node_modules/".to_string(),
-                    ".trr/".to_string(),
-                    "*.log".to_string(),
-                    ".DS_Store".to_string(),
+                    "target".to_string()
                 ],
             },
             branch_aliases,
@@ -177,20 +172,13 @@ mod tests {
             config
                 .settings
                 .rsync_excludes
-                .contains(&"target/".to_string())
-        );
-        assert!(
-            config
-                .settings
-                .rsync_excludes
-                .contains(&"node_modules/".to_string())
+                .contains(&"target".to_string())
         );
 
         assert_eq!(
             config.branch_aliases.get("@f"),
             Some(&"feature".to_string())
         );
-        assert_eq!(config.branch_aliases.get("@fx"), Some(&"fix".to_string()));
         assert_eq!(config.branch_aliases.get("@b"), Some(&"bugfix".to_string()));
         assert!(
             config
